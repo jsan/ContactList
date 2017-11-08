@@ -1,0 +1,37 @@
+[
+	{
+		"id": 1, 
+		"nome": "Oi", 
+		"codigo": 14, 
+		"categoria": "Celular", 
+		"preco": 1
+	},
+	{
+		"id": 2, 
+		"nome": "Vivo", 
+		"codigo": 15, 
+		"categoria": "Celular", 
+		"preco": 2
+	},
+	{
+		"id": 3, 
+		"nome": "Tim", 
+		"codigo": 16, 
+		"categoria": "Celular", 
+		"preco": 5
+	},
+	{
+		"id": 4, 
+		"nome": "Gvt", 
+		"codigo": 18, 
+		"categoria": "Fixo", 
+		"preco": 3
+	},
+	{
+		"id": 5, 
+		"nome": "Embratel", 
+		"codigo": 21, 
+		"categoria": "Fixo", 
+		"preco": 2
+	}
+]

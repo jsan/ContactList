@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html ng-app="listaTelefonica">
+<head>
+	<meta charset="UTF-8">
+	<title>Lista Telefonica Hi Five</title>
+	<link rel="stylesheet" type="text/css" href="lib/bootstrap/bootstrap.css">
+	<style type="text/css">
+		.jumbotron{
+			width: 600px;
+			text-align: left; 
+			xmargin-left: 30px;
+			margin: auto;
+			margin-top: 20px;
+			border-radius: 5px;
+			border: 2px solid #cccccc;
+		}
+		.table{
+			margin-top: 20px;
+		}
+
+		.form-control {
+			margin-bottom: 6px;
+		}
+
+		.selecionado {
+			background-color: yellow;
+		}
+
+		.vermelho {
+			font-size: 14px;
+		}
+
+		.divA {
+			position: absolute;
+			text-align: center;
+			width:100%;
+			background-color: transparent;
+		}
+		.acoes {
+			position: relative;
+			padding: 20px;
+			margin: 30px auto;
+			text-align: center;
+			width: 450px;
+			background-color: #cccccc;
+			border-radius: 5px;
+			border: 2px solid;
+		}
+
+		.botao {
+		  color : #000000;
+		  padding: 10px;
+		}
+
+		.botao:not([disabled]):hover {
+			cursor: pointer;
+		  background-color: rgba(158, 158, 158, 0.2);
+		}
+
+		.botao[disabled] { 
+		  color : rgba(0, 0, 0, 0.26);
+		  background-color: transparent;
+		}
+	</style>
+
+	<script src="lib/angular.js"></script>
+	<script src="lib/angular-locale_pt-br.js"></script>
+	<script src="lib/angular-messages.js"></script> 
+	<script>
+		angular.module("listaTelefonica", ["ngMessages"]);
+		angular.module("listaTelefonica").controller("listaTelefonicaCtrl", function ($scope, $http){
+			$scope.app = "Lista Telefonica";
+			$scope.contatos = [];
+			$scope.operadoras = [];
+			$scope.erro = "";
+			$scope.nomeOper = "";
+			$scope.flag = true;
+			$scope.acao = "";
+
+			var carregarContatos = function () {
+				$http.get("http://localhost:8080/HiFive/rest/serv/contatos").then(function (response) {
+				$scope.contatos = response.data;
+				});
+			};
+
+			var carregarOperadoras = function () {
+				$http.get("listaJson/operadoras.json").then(function (response){
+				$scope.operadoras = response.data;
+				});
+			};
+
+			$scope.showPanel = function(acao, contato) {
+				$scope.flag=false;
+				$scope.acao = acao;
+				if (acao == "edit")
+					
+					$scope.contato = contato;
+			};
+
+			$scope.sayHi = function(contato) {
+				console.log("acao"+$scope.acao);
+				console.log("nome"+contato.nome);
+				$scope.flag=false;
+				if ($scope.acao == "novo")
+					$scope.adicionarContato(contato);
+				else
+				if ($scope.acao == "edit")
+					$scope.alterarContato(contato);
+			};
+
+			$scope.adicionarContato = function (contato) {
+				$http.post("http://localhost:8080/HiFive/rest/serv/contatos/adicionarContato/"+contato.nome+"/"+contato.telefone+"/"+contato.operadora.id, contato).then(function (response) {
+				$scope.contatos = response.data;
+				delete $scope.contato;
+				$scope.contatoForm.$setPristine();
+				carregarContatos();
+				$scope.flag = true;
+				// console.log("operadoras:"+response.data);
+				});
+			};
+				
+			$scope.alterarContato = function (contato) {
+				$http.post("http://localhost:8080/HiFive/rest/serv/contatos/alterarContato/"+contato.id+"/"+contato.nome+"/"+contato.telefone+"/"+contato.operadora.id, contato).then(function (response) {
+				$scope.contatos = response.data;
+				delete $scope.contato;
+				$scope.contatoForm.$setPristine();
+				carregarContatos();
+				$scope.flag = true;
+				// console.log("operadoras:"+response.data);
+				});
+			};
+
+			$scope.apagarContato = function (contatos) {
+				$scope.contatos = contatos.filter(function (contato){
+					if(contato.selecionado) {
+						$http.post("http://localhost:8080/HiFive/rest/serv/contatos/apagarContato/"+contato.id, contato).then(function (response) {
+						$scope.contatos = response.data;
+						carregarContatos();
+//						return contato;
+						});
+					}
+				});
+			};
+
+			$scope.isContatoSelecionado = function(contatos) {
+				$scope.contatos.some(function(contato){
+				return contato.selecionado;
+				});
+			};
+
+			$scope.isContatoSelecionado = function(contatos) {
+				return contatos.some(function(contato){
+				return contato.selecionado;
+				});
+			};
+
+			$scope.ordernarPor = function(campo) {
+				$scope.campoOrdem = campo;
+				$scope.direcaoOrdem = !$scope.direcaoOrdem;
+			};
+
+			carregarOperadoras();
+			carregarContatos();
+			// $scope.classe="selecionado";
+		}); 
+	</script>
+</head>
+<body ng-controller="listaTelefonicaCtrl">
+	<div id="divA" class="divA" ng-show="!flag">
+		<div class="acoes">
+		<div style="text-align:right"><md-button ng-click="flag=true" class="botao">Fechar</md-button></div>
+		<br>
+		<form name="contatoForm">
+			<input type="text" ng-model="contato.nome" name="nome" class="form-control" placeholder="nome" ng-required="true" ng-minlength="10"/>
+			<input type="text" ng-model="contato.telefone" name="telefone" class="form-control" placeholder="telefone" ng-required="true" ng-pattern="/^\d{4,5}-\d{4}$/"/>
+			<select  class="form-control" ng-model="contato.operadora" ng-options="operadora.nome + ' ' + operadora.codigo + ' (' + ( operadora.preco | currency) +')' group by operadora.categoria for operadora in operadoras | orderBy: 'nome'" ng-required="true">
+				<option value="">Selecione uma operadora</option>
+	 		</select>
+		</form>
+
+		<div ng-messages="contatoForm.nome.$error">
+			<div ng-message="required" class="alert alert-danger vermelho">
+				Por favor, preencha o nome.
+			</div>
+			<div ng-message="minlength" class="alert alert-danger vermelho">
+				Por favor, preencha o nome com até 10 caracteres.
+			</div>
+		</div>
+
+		<div ng-messages="contatoForm.telefone.$error">
+			<div ng-message="pattern" class="alert alert-danger vermelho">
+				Por favor, preencha o telefone no formato 9999-9999
+			</div>
+		</div>
+		<button ng-click="sayHi(contato)" ng-disabled="contatoForm.$invalid" class="btn btn-primary btn-block">Salvar Contato</button>
+		</div>
+
+	</div>
+
+	<div class="jumbotron">
+		<h3>{{app}}</h3> 
+		<h2>{{erro}}</h2>
+		
+		<input type="text" ng-model="criterioDeBusca" class="form-control" placeholder="O que você procura?"/>
+		<table class="table" ng-show="contatos.length > 0">
+			<tr>
+				<th></th>
+				<th><a href="" ng-click="ordernarPor('nome')">Nome</a></th>
+				<th>Telefone</th> 
+				<th><a href="" ng-click="ordernarPor('operadora')">Operadora</a></th>
+				<th> </th>
+			</tr>
+			<tr ng-class="{selecionado: contato.selecionado}" ng-repeat="contato in contatos | filter:{nome: criterioDeBusca} | orderBy: campoOrdem : direcaoOrdem"/>
+				<td><input type="checkbox" ng-model="contato.selecionado"/></td>
+				<td align="left">{{contato.nome | uppercase	}}</td>
+				<td align="left">{{contato.telefone}}</td>
+				<td ng-repeat="oper in operadoras | filter:{id: contato.idOperadora}">
+					{{oper.nome}} {{oper.codigo}}</td>  
+				<td><md-button ng-click="showPanel('edit',contato)" class="btn btn-primary btn-block">Edit</md-button></td>
+			</tr>  
+			<!--r ng-repeat="oper in operadoras">
+				<td ng-repeat="(key,value) in oper | filter:{key: 1}">
+					{{key + ': ' + value}}  
+				<td>
+			<tr--> 
+		</table> 
+	</hr> 
+		<div style="text-align:center"><md-button ng-click="showPanel('novo',contato)" class="btn btn-primary btn-block">Novo Contato</md-button></div>
+		<br>
+		<button ng-click="apagarContato(contatos)"  ng-if="isContatoSelecionado(contatos)" class="btn btn-danger btn-block">Apagar Contato</button>
+	</div>
+	<div ng-include="'footer.html'"></div>
+</body>
+</html>
