@@ -1,2 +1,6 @@
 # ContactList
-ADAL !!! This is a study of angularjs using java Restful service
+Fala ADAL !!! 
+Aí está o codigo do projetinho.
+Abcs!
+
+This is my study of angularjs using java Restful service
