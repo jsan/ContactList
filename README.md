@@ -1,8 +1,12 @@
 # ContactList
 Fala ADAL !!! 
-Aí está o codigo do projetinho.
+Aí está o codigo do projetinho. Ele ta na pasta HiFive;
 
-Para ver rodando, assim que eu tiver um provedor eu te falo.
+No arquivo fluxograma.jpg é um resumo q eu fiz.
+
+Este é um teste para a gente, se quiser, usar mais o GitHub.
+
+Para ver rodando, tem q ter um provedor.
 
 Abcs!
 
